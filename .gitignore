@@ -1,0 +1,7 @@
+﻿node_modules/
+.next/
+.env.local
+prisma/dev.db
+.vscode/
+.DS_Store
+*.log
