@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// .prettierrc
 {
   "semi": true,
@@ -6,4 +7,14 @@
   "printWidth": 100,
   "tabWidth": 2,
   "useTabs": false
+=======
+﻿// .prettierrc
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false
+>>>>>>> e80971fd89a4070a0cd27e36e539bca7eec92a45
 }

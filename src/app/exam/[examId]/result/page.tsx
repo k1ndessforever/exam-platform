@@ -53,7 +53,6 @@ export default function ResultPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +63,6 @@ export default function ResultPage() {
             <p className="text-xl text-gray-600">{exam.name}</p>
           </div>
 
-          {/* Main Stats */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-8 text-center text-white">
               <p className="text-lg opacity-90 mb-2">Total Score</p>
@@ -78,7 +76,6 @@ export default function ResultPage() {
             </div>
           </div>
 
-          {/* Detailed Stats */}
           <div className="grid md:grid-cols-4 gap-4 mb-8">
             <div className="bg-gray-50 rounded-xl p-6 text-center">
               <p className="text-sm text-gray-600 mb-2">Attempted</p>
@@ -98,7 +95,6 @@ export default function ResultPage() {
             </div>
           </div>
 
-          {/* Performance Metrics */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-purple-50 rounded-xl p-6">
               <div className="flex items-center gap-3 mb-2">
@@ -120,7 +116,6 @@ export default function ResultPage() {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-4">
             <Button
               onClick={() => window.location.href = '/dashboard'}

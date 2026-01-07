@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// .eslintrc.json
 {
   "extends": [
@@ -11,4 +12,19 @@
     "prefer-const": "error",
     "no-console": ["warn", { "allow": ["warn", "error"] }]
   }
+=======
+﻿// .eslintrc.json
+{
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "prefer-const": "error",
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
+  }
+>>>>>>> e80971fd89a4070a0cd27e36e539bca7eec92a45
 }

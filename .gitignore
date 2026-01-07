@@ -4,4 +4,8 @@
 prisma/dev.db
 .vscode/
 .DS_Store
+<<<<<<< HEAD
 *.log
+=======
+*.log
+>>>>>>> e80971fd89a4070a0cd27e36e539bca7eec92a45

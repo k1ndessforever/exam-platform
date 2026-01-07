@@ -26,7 +26,6 @@ export default function ExamTestPage() {
   const [examData, setExamData] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   
-  // Start exam
   useEffect(() => {
     const initExam = async () => {
       try {
@@ -41,14 +40,12 @@ export default function ExamTestPage() {
     initExam();
   }, []);
   
-  // Load first question
   useEffect(() => {
     if (state.attemptId && state.questionIds.length > 0) {
       fetchQuestion(0);
     }
   }, [state.attemptId, state.questionIds]);
   
-  // Timer
   const { formattedTime, isExpired } = useTimer(
     examData?.durationMinutes || 120,
     examData?.startedAt || new Date(),
@@ -116,7 +113,6 @@ export default function ExamTestPage() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-md border-b sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
@@ -140,7 +136,6 @@ export default function ExamTestPage() {
             </div>
           </div>
           
-          {/* Progress bar */}
           <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all"
@@ -152,13 +147,10 @@ export default function ExamTestPage() {
         </div>
       </div>
       
-      {/* Main content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-4 gap-6">
-          {/* Question section */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-lg p-8">
-              {/* Question header */}
               <div className="flex justify-between items-center mb-6">
                 <div className="flex gap-2">
                   <span className={`px-3 py-1 text-sm font-medium rounded-full ${
@@ -177,32 +169,26 @@ export default function ExamTestPage() {
                 <p className="text-sm text-gray-600">Topic: {question.topic}</p>
               </div>
               
-              {/* Question text */}
               <p className="text-lg text-gray-800 mb-6 leading-relaxed bg-gray-50 p-6 rounded-lg">
                 {question.questionText}
               </p>
               
-              {/* Diagram */}
               {question.hasDiagram && question.diagram && (
                 <div className="my-6">
                   <img
                     src={question.diagram.filePath}
                     alt={question.diagram.altText || 'Question diagram'}
                     className="max-w-full h-auto rounded-lg border"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/diagram-placeholder.svg';
-                    }}
                   />
                 </div>
               )}
               
-              {/* Options */}
               <div className="space-y-3 mb-8">
                 {['A', 'B', 'C', 'D'].map((opt) => (
                   <button
                     key={opt}
                     onClick={() => handleAnswerSelect(opt)}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition transform hover:scale-102 ${
+                    className={`w-full text-left p-5 rounded-xl border-2 transition ${
                       selectedOption === opt
                         ? 'border-blue-600 bg-blue-50 shadow-md'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
@@ -227,7 +213,6 @@ export default function ExamTestPage() {
                 ))}
               </div>
               
-              {/* Actions */}
               <div className="flex gap-4">
                 <Button
                   variant="secondary"
@@ -260,7 +245,6 @@ export default function ExamTestPage() {
             </div>
           </div>
           
-          {/* Palette */}
           <div className="lg:col-span-1">
             <QuestionPalette
               questionIds={state.questionIds}
