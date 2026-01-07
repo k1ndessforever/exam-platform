@@ -1,0 +1,299 @@
+﻿// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  mobile        String?
+  examType      String?  // 'JEE', 'NEET', 'CET'
+  role          String   @default("student") // 'student', 'admin'
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  examAttempts  ExamAttempt[]
+  sessions      Session[]
+  
+  @@index([email])
+  @@index([role])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// ============================================
+// EXAM STRUCTURE
+// ============================================
+
+model Exam {
+  id                      String   @id @default(uuid())
+  name                    String
+  description             String?
+  examType                String   // 'JEE', 'NEET', 'CET'
+  durationMinutes         Int      @default(120)
+  totalQuestions          Int      @default(100)
+  
+  // Distribution configurations
+  difficultyDistribution  Json     // {"Easy": 30, "Medium": 50, "Hard": 20}
+  subjectDistribution     Json     // {"Physics": 33, "Chemistry": 33, "Math": 34}
+  
+  // Marking scheme
+  correctMarks            Decimal  @default(4)
+  wrongMarks              Decimal  @default(-1)
+  unattemptedMarks        Decimal  @default(0)
+  
+  // Metadata
+  isActive                Boolean  @default(true)
+  isPublished             Boolean  @default(false)
+  startDate               DateTime?
+  endDate                 DateTime?
+  maxAttempts             Int      @default(3)
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  createdBy               String?
+  
+  // Relations
+  examQuestions           ExamQuestion[]
+  examAttempts            ExamAttempt[]
+  
+  @@index([examType])
+  @@index([isActive, isPublished])
+  @@index([startDate, endDate])
+}
+
+// ============================================
+// QUESTION BANK
+// ============================================
+
+model Question {
+  id              String   @id @default(uuid())
+  questionText    String   @db.Text
+  optionA         String   @db.Text
+  optionB         String   @db.Text
+  optionC         String   @db.Text
+  optionD         String   @db.Text
+  correctOption   String   // 'A', 'B', 'C', 'D'
+  explanation     String?  @db.Text
+  
+  // Classification
+  subject         String   // 'Physics', 'Chemistry', 'Mathematics', 'Biology'
+  topic           String
+  subtopic        String?
+  difficulty      String   // 'Easy', 'Medium', 'Hard'
+  
+  // Diagram support
+  hasDiagram      Boolean  @default(false)
+  diagramId       String?  @unique
+  
+  // Analytics
+  timesAsked      Int      @default(0)
+  timesCorrect    Int      @default(0)
+  averageTime     Int?     // seconds
+  
+  // Metadata
+  isActive        Boolean  @default(true)
+  isVerified      Boolean  @default(false)
+  source          String?  // 'JEE 2023', 'NEET 2024', etc.
+  year            Int?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  
+  // Relations
+  diagram         Diagram?  @relation(fields: [diagramId], references: [id], onDelete: SetNull)
+  examQuestions   ExamQuestion[]
+  attemptAnswers  AttemptAnswer[]
+  
+  @@index([subject, difficulty])
+  @@index([topic, subtopic])
+  @@index([isActive, isVerified])
+  @@index([hasDiagram])
+}
+
+model Diagram {
+  id          String   @id @default(uuid())
+  filename    String
+  filePath    String   @unique
+  altText     String?
+  width       Int?
+  height      Int?
+  fileSizeKb  Int?
+  mimeType    String   @default("image/png")
+  
+  uploadedAt  DateTime @default(now())
+  uploadedBy  String?
+  
+  question    Question?
+  
+  @@index([filePath])
+}
+
+// ============================================
+// EXAM-QUESTION MAPPING
+// ============================================
+
+model ExamQuestion {
+  id          String   @id @default(uuid())
+  examId      String
+  questionId  String
+  position    Int?     // Optional ordering
+  weight      Decimal? // Optional weighted scoring
+  
+  addedAt     DateTime @default(now())
+  addedBy     String?
+  
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@unique([examId, questionId])
+  @@index([examId])
+  @@index([questionId])
+}
+
+// ============================================
+// EXAM ATTEMPTS
+// ============================================
+
+model ExamAttempt {
+  id              String    @id @default(uuid())
+  userId          String
+  examId          String
+  attemptNumber   Int       @default(1)
+  
+  // Immutable question set
+  questionIds     String[]  // Ordered array of question UUIDs
+  
+  // Timestamps
+  startedAt       DateTime  @default(now())
+  submittedAt     DateTime?
+  timeSpentSeconds Int?
+  
+  // Status
+  isCompleted     Boolean   @default(false)
+  isAbandoned     Boolean   @default(false)
+  
+  // Security & audit
+  ipAddress       String?
+  userAgent       String?
+  deviceInfo      Json?
+  
+  // Relations
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam            Exam              @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers         AttemptAnswer[]
+  result          AttemptResult?
+  
+  @@unique([userId, examId, attemptNumber])
+  @@index([userId, examId])
+  @@index([startedAt])
+  @@index([isCompleted])
+}
+
+model AttemptAnswer {
+  id                  String    @id @default(uuid())
+  attemptId           String
+  questionId          String
+  
+  selectedOption      String?   // 'A', 'B', 'C', 'D', null for unanswered
+  isMarkedForReview   Boolean   @default(false)
+  timeSpentSeconds    Int       @default(0)
+  
+  answeredAt          DateTime?
+  lastModifiedAt      DateTime  @updatedAt
+  
+  attempt             ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question            Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+}
+
+// ============================================
+// RESULTS & ANALYTICS
+// ============================================
+
+model AttemptResult {
+  id              String   @id @default(uuid())
+  attemptId       String   @unique
+  
+  // Score breakdown
+  totalQuestions  Int
+  attempted       Int
+  correct         Int
+  wrong           Int
+  unattempted     Int
+  
+  // Scores
+  totalScore      Decimal
+  maxScore        Decimal
+  accuracy        Decimal  // Percentage
+  
+  // Rankings
+  percentile      Decimal?
+  rank            Int?
+  totalAttempts   Int?     // Total attempts for this exam at time of calculation
+  
+  // Subject-wise breakdown
+  subjectScores   Json?    // {"Physics": 120, "Chemistry": 115, ...}
+  
+  // Time analytics
+  averageTimePerQuestion Int? // seconds
+  
+  calculatedAt    DateTime @default(now())
+  
+  attempt         ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  
+  @@index([percentile])
+  @@index([rank])
+  @@index([totalScore])
+}
+
+// ============================================
+// AUDIT & LOGGING
+// ============================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String   // 'EXAM_STARTED', 'QUESTION_ANSWERED', 'EXAM_SUBMITTED', etc.
+  entityType  String   // 'Exam', 'Question', 'User'
+  entityId    String
+  metadata    Json?
+  ipAddress   String?
+  timestamp   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
